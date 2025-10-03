@@ -40,7 +40,7 @@ public_users.get('/', function (req, res) {
 // Get book details based on ISBN
 public_users.get('/isbn/:isbn', function (req, res) {
     //Write your code here
-    
+
     let isbn = req.params.isbn;
     return res.status(200).json(books[isbn]);
 });
@@ -48,13 +48,28 @@ public_users.get('/isbn/:isbn', function (req, res) {
 // Get book details based on author
 public_users.get('/author/:author', function (req, res) {
     //Write your code here
-    return res.status(300).json({ message: "Yet to be implemented" });
+
+    let author = req.params.author;
+    for (let isbn in books){
+        if (books[isbn]["author"] === author){
+            return res.json(books[isbn]);
+        }
+    }
+    return res.status(400).json({ message: "Invalid author!" });
 });
 
 // Get all books based on title
 public_users.get('/title/:title', function (req, res) {
     //Write your code here
-    return res.status(300).json({ message: "Yet to be implemented" });
+
+    let title = req.params.title;
+    for (let isbn in books){
+        if (books[isbn]["title"] === title){
+            return res.json(books[isbn]);
+        }
+    }
+    return res.status(400).json({ message: "Invalid title!" });
+    
 });
 
 //  Get book review
