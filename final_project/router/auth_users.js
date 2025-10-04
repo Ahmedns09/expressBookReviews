@@ -38,7 +38,7 @@ regd_users.post("/login", (req, res) => {
     }
 
     if (authenticatedUser(username, password)) {
-        let accessToken = jwt.sign({ data: password }, "access", { expiresIn: 60 });
+        let accessToken = jwt.sign({ data: password }, "access", { expiresIn: 60 * 5 });
         req.session.authorization = { accessToken, username };
         res.send("User successfully logged in!");
     } else {
@@ -59,24 +59,43 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
 
         const username = req.session.authorization['username'];
 
-        // res.json(books[givenISBN]["reviews"]);
-
         if (Object.keys(books[givenISBN]["reviews"]).some((key) => key === username)) {
-
             books[givenISBN]["reviews"][username] = newReview;
             res.json("Your review is updated.");
-
         } else {
-
             books[givenISBN]["reviews"][username] = newReview;
-
             return res.json("Your review is added.");
         }
-
     } else {
         res.status(400).json({ message: "Invalid ISBN" });
     }
 });
+
+
+//delete a book review
+regd_users.delete("/auth/review/:isbn", (req, res) => {
+
+    const isbnGiven = req.params.isbn;
+
+    if (!req.session?.authorization?.username) {
+        return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    if (!books.hasOwnProperty(isbnGiven)) {
+        return res.status(404).json({ message: "Invalid ISBN" });
+    }
+
+    const username = req.session.authorization.username;
+    const reviews = books[isbnGiven].reviews;
+
+    if (reviews.hasOwnProperty(username)) {
+        delete reviews[username];
+        return res.json({ message: "Your review has been deleted." })
+    } else {
+        return res.status(404).json({ message: "No review found for this user!" });
+    }
+});
+
 
 module.exports.authenticated = regd_users;
 module.exports.isValid = isValid;
