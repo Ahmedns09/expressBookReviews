@@ -29,7 +29,7 @@ const authenticatedUser = (username, password) => { //returns boolean
 //only registered users can login
 regd_users.post("/login", (req, res) => {
     //Write your code here
-    console.log("entered");
+
     const username = req.body.username;
     const password = req.body.password;
 
@@ -51,7 +51,31 @@ regd_users.post("/login", (req, res) => {
 // Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
     //Write your code here
-    return res.status(300).json({ message: "Yet to be implemented" });
+
+    const givenISBN = req.params.isbn;
+    const newReview = req.query.rev;
+
+    if (Object.keys(books).some((key) => key === givenISBN)) {
+
+        const username = req.session.authorization['username'];
+
+        // res.json(books[givenISBN]["reviews"]);
+
+        if (Object.keys(books[givenISBN]["reviews"]).some((key) => key === username)) {
+
+            books[givenISBN]["reviews"][username] = newReview;
+            res.json("Your review is updated.");
+
+        } else {
+
+            books[givenISBN]["reviews"][username] = newReview;
+
+            return res.json("Your review is added.");
+        }
+
+    } else {
+        res.status(400).json({ message: "Invalid ISBN" });
+    }
 });
 
 module.exports.authenticated = regd_users;
