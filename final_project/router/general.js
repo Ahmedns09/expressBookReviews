@@ -28,12 +28,9 @@ public_users.get('/', function (req, res) {
     //Asynchronous operation using Promise
 
     const myPromise = new Promise((resolve, reject) => {
-        if (books) {
-            resolve(books);
-        } else {
-            reject("Books not found!");
-        }
-        axios.get('https://anskhzyan-5000.theianext-1-labs-prod-misc-tools-us-east-0.proxy.cognitiveclass.ai/')
+        axios.get('https://anskhzyan-5000.theianext-1-labs-prod-misc-tools-us-east-0.proxy.cognitiveclass.ai/booksdb.json')
+            .then(response => resolve(response.data))
+            .catch(error => reject(error));
     });
 
     myPromise.then((data) => {
@@ -51,31 +48,30 @@ public_users.get('/isbn/:isbn', function (req, res) {
     let isbn = req.params.isbn;
 
     const myPromise1 = new Promise((resolve, reject) => {
-        if (books) {
-            resolve(books);
-        } else {
-            reject("No books found!")
-        }
-    });
-
-    const myPromise2 = new Promise((resolve, reject) => {
-        if (books.hasOwnProperty(isbn)) {
-            resolve(true);
-        } else {
-            reject("Invalid ISBN");
-        }
+        axios.get('https://anskhzyan-5000.theianext-1-labs-prod-misc-tools-us-east-0.proxy.cognitiveclass.ai/booksdb.json')
+            .then(response => resolve(response.data))
+            .catch(error => reject(error));
     });
 
     myPromise1.then((data) => {
-        myPromise2.then((response) => {
+        const myPromise2 = new Promise((resolve, reject) => {
+            if (data.hasOwnProperty(isbn)) {
+                resolve(true);
+            } else {
+                reject("Invalid ISBN");
+            }
+        });
+
+        myPromise2.then(() => {
             return res.status(200).json(data[isbn]);
         })
             .catch((err2) => {
                 return res.status(400).json({ message: err2 });
             });
+
     })
         .catch((err1) => {
-            return res.status(500).json({ message: err1 });
+            return res.status(500).json({ message: err1.message || err1 });
         });
 });
 
@@ -84,16 +80,21 @@ public_users.get('/author/:author', async function (req, res) {
     //Write your code here
     //Asynchronous operation using Async/Await
     async function fetchBook(data) {
-        if (data) {
-            return data;
-        } else {
-            throw new Error("No books found!")
+        try{
+            const response = await axios('https://anskhzyan-5000.theianext-1-labs-prod-misc-tools-us-east-0.proxy.cognitiveclass.ai/booksdb.json');
+            if(response.data){
+                return response.data;
+            }else{
+                throw new Error("No books found!");
+            }
+        } catch(err){
+            throw new Error("Failed to fetch books: "+err.message);
         }
     }
 
     try {
         let author = req.params.author;
-        const data = await fetchBook(books);
+        const data = await fetchBook();
         let booksByauthor = [];
 
         for (let isbn in data) {
@@ -102,6 +103,7 @@ public_users.get('/author/:author', async function (req, res) {
 
             }
         }
+
         if (booksByauthor.length === 0) {
             return res.status(400).json({ message: "Invalid Author!" });
         }
@@ -118,16 +120,21 @@ public_users.get('/title/:title', async function (req, res) {
     //Write your code here
     //Asynchronous operation using Async/Await
     async function fetchBook(data) {
-        if (data) {
-            return data;
-        } else {
-            throw new Error("No books found!");
+        try{
+            const response = await axios('https://anskhzyan-5000.theianext-1-labs-prod-misc-tools-us-east-0.proxy.cognitiveclass.ai/booksdb.json');
+            if(response.data){
+                return response.data;
+            }else{
+                throw new Error("No books found!");
+            }
+        } catch(err){
+            throw new Error("Failed to fetch books: "+err.message);
         }
     }
 
     try {
         let title = req.params.title;
-        const data = await fetchBook(books);
+        const data = await fetchBook();
         let booksByTitle = [];
 
         for (let isbn in data) {
